@@ -6,9 +6,11 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.BaseAdapter
 import android.widget.TextView
+import java.text.SimpleDateFormat
+import java.util.*
 
-class TaskAdapter(context: Context) : BaseAdapter {
-    var mTaskList = mutableListOf<String>()
+class TaskAdapter(context: Context) : BaseAdapter() {
+    var mTaskList = mutableListOf<Task>()
     private val mLayoutInflater : LayoutInflater
 
     init {
@@ -21,7 +23,11 @@ class TaskAdapter(context: Context) : BaseAdapter {
         val textView1 = view.findViewById<TextView>(android.R.id.text1)
         val textView2 = view.findViewById<TextView>(android.R.id.text2)
 
-        textView1.text = mTaskList[position]
+        textView1.text = mTaskList[position].title
+
+        val simpleDateFormat = SimpleDateFormat("yyyy-MM-dd HH:mm", Locale.JAPANESE)
+        val date = mTaskList[position].date
+        textView2.text = simpleDateFormat.format(date)
 
         return view
     }
@@ -31,7 +37,7 @@ class TaskAdapter(context: Context) : BaseAdapter {
     }
 
     override fun getItemId(position: Int): Long {
-        return 0
+        return mTaskList[position].id.toLong()
     }
 
     override fun getCount(): Int {
