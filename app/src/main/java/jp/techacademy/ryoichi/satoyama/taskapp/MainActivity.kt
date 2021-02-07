@@ -1,16 +1,24 @@
 package jp.techacademy.ryoichi.satoyama.taskapp
 
+import android.app.AlarmManager
+import android.app.PendingIntent
+import android.content.Context
+import android.content.Intent
 import android.os.Bundle
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.google.android.material.snackbar.Snackbar
 import androidx.appcompat.app.AppCompatActivity
 import android.view.Menu
 import android.view.MenuItem
+import androidx.appcompat.app.AlertDialog
 import io.realm.Realm
 import io.realm.RealmChangeListener
 import io.realm.Sort
+import io.realm.kotlin.where
 import kotlinx.android.synthetic.main.activity_main.*
 import java.util.*
+
+const val EXTRA_TASK = "MyTASK"
 
 class MainActivity : AppCompatActivity() {
     private lateinit var mRealm: Realm
@@ -26,8 +34,8 @@ class MainActivity : AppCompatActivity() {
         setContentView(R.layout.activity_main)
 
         findViewById<FloatingActionButton>(R.id.fab).setOnClickListener { view ->
-            Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
-                    .setAction("Action", null).show()
+            val intent = Intent(this, InputActivity::class.java)
+            startActivity(intent)
         }
 
         //Realmの設定
@@ -39,14 +47,50 @@ class MainActivity : AppCompatActivity() {
 
         listView1.setOnItemClickListener { parent, view, position, id ->
             //入力・編集画面への遷移
+
+            val task = parent.adapter.getItem(position) as Task
+            val intent = Intent(this, InputActivity::class.java)
+            intent.putExtra(EXTRA_TASK, task.id)
+            startActivity(intent)
         }
 
         listView1.setOnItemLongClickListener { parent, view, position, id ->
             //タスク削除
+            val task = parent.adapter.getItem(position) as Task
+
+            val builder = AlertDialog.Builder(this)
+            builder.setTitle("削除")
+            builder.setMessage(task.title + "を削除しますか")
+
+            builder.setPositiveButton("OK"){dialog, which ->
+                val results = mRealm.where(Task::class.java).equalTo("id", task.id).findAll()
+                mRealm.beginTransaction()
+                results.deleteAllFromRealm()
+                mRealm.commitTransaction()
+
+                val resultIntent = Intent(applicationContext, TaskAlarmReceiver::class.java)
+                val resultPendingIntent = PendingIntent.getBroadcast(
+                    this,
+                    task.id,
+                    resultIntent,
+                    PendingIntent.FLAG_UPDATE_CURRENT
+                )
+
+                val alarmManager = getSystemService(Context.ALARM_SERVICE) as AlarmManager
+                alarmManager.cancel(resultPendingIntent)
+
+                reloadListView()
+            }
+
+            builder.setNegativeButton("CANCEL", null)
+
+            val dialog = builder.create()
+            dialog.show()
+
             true
         }
 
-        addTaskForTest()
+
 
         reloadListView()
     }
