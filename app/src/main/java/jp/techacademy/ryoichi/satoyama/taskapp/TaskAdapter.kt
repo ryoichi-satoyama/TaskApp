@@ -18,16 +18,24 @@ class TaskAdapter(context: Context) : BaseAdapter() {
     }
 
     override fun getView(position: Int, convertView: View?, parent: ViewGroup?): View {
-        val view: View = convertView ?: mLayoutInflater.inflate(android.R.layout.simple_list_item_2, null)
+//        val view: View = convertView ?: mLayoutInflater.inflate(android.R.layout.simple_list_item_2, null)
+        val view: View = convertView ?: mLayoutInflater.inflate(R.layout.layout_list, null)
 
-        val textView1 = view.findViewById<TextView>(android.R.id.text1)
-        val textView2 = view.findViewById<TextView>(android.R.id.text2)
+//        val textView1 = view.findViewById<TextView>(android.R.id.text1)
+//        val textView2 = view.findViewById<TextView>(android.R.id.text2)
 
-        textView1.text = mTaskList[position].title
+        val categoryTextView = view.findViewById<TextView>(R.id.categoryTextView)
+        val titleTextView = view.findViewById<TextView>(R.id.titleTextView)
+        val dateTextView = view.findViewById<TextView>(R.id.dateTextView)
+
+//        textView1.text = mTaskList[position].title
+        categoryTextView.text = "カテゴリ：" + mTaskList[position].category
+        titleTextView.text = "タイトル：" + mTaskList[position].title
 
         val simpleDateFormat = SimpleDateFormat("yyyy-MM-dd HH:mm", Locale.JAPANESE)
         val date = mTaskList[position].date
-        textView2.text = simpleDateFormat.format(date)
+//        textView2.text = simpleDateFormat.format(date)
+        dateTextView.text = simpleDateFormat.format(date)
 
         return view
     }

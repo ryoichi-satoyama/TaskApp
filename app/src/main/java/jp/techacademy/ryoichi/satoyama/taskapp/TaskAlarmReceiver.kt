@@ -19,7 +19,7 @@ class TaskAlarmReceiver : BroadcastReceiver() {
         val notificationManager = context!!.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
 
         if(Build.VERSION.SDK_INT >= 26) {
-            var channel = NotificationChannel("default",
+            val channel = NotificationChannel("default",
             "Channel name",
             NotificationManager.IMPORTANCE_DEFAULT)
             channel.description = "Channel description"

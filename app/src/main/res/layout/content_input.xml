@@ -12,11 +12,16 @@
     tools:context=".InputActivity"
     tools:showIn="@layout/activity_input">
 
-
+    <EditText
+        android:id="@+id/category_edit_text"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="カテゴリ" />
     <EditText
         android:id="@+id/title_edit_text"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_below="@id/category_edit_text"
         android:hint="タイトル" />
     <EditText
         android:id="@+id/content_edit_text"

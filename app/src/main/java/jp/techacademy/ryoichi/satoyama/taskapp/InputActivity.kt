@@ -78,6 +78,7 @@ class InputActivity : AppCompatActivity() {
             mHour = calendar.get(Calendar.HOUR_OF_DAY)
             mMinute = calendar.get(Calendar.MINUTE)
         } else {
+            category_edit_text.setText(mTask!!.category)
             title_edit_text.setText(mTask!!.title)
             content_edit_text.setText(mTask!!.contents)
 
@@ -115,9 +116,11 @@ class InputActivity : AppCompatActivity() {
             mTask!!.id = identifier
         }
 
+        val category = category_edit_text.text.toString()
         val title = title_edit_text.text.toString()
         val content = content_edit_text.text.toString()
 
+        mTask!!.category = category
         mTask!!.title = title
         mTask!!.contents = content
         val calendar = GregorianCalendar(mYear, mMonth, mDay, mHour, mMinute)
