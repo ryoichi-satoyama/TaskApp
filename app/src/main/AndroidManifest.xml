@@ -2,7 +2,7 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="jp.techacademy.ryoichi.satoyama.taskapp">
 
-    <uses-permission android:name="android.permission.WAKE_LOCK"/>
+    <uses-permission android:name="android.permission.WAKE_LOCK" />
 
     <application
         android:name=".TaskApp"
@@ -12,8 +12,10 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
-        <receiver
-            android:name=".TaskAlarmReceiver"></receiver>
+        <activity android:name=".CategoryActivity"
+            android:parentActivityName=".InputActivity"></activity>
+
+        <receiver android:name=".TaskAlarmReceiver" />
 
         <activity
             android:name=".InputActivity"
