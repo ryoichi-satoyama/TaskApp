@@ -111,6 +111,7 @@ class MainActivity : AppCompatActivity() {
             val dialog = builder.create()
             dialog.show()
 
+            //trueはsetOnItemClickListenerを含めない
             true
         }
 
