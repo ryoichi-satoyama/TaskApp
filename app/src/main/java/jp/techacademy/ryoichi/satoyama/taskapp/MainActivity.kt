@@ -5,49 +5,26 @@ import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
-import android.util.Log
 import com.google.android.material.floatingactionbutton.FloatingActionButton
-import com.google.android.material.snackbar.Snackbar
 import androidx.appcompat.app.AppCompatActivity
-import android.view.Menu
-import android.view.MenuItem
+import android.view.View
+import android.widget.AdapterView
+import android.widget.ArrayAdapter
 import androidx.appcompat.app.AlertDialog
-import androidx.appcompat.widget.SearchView
 import io.realm.Realm
 import io.realm.RealmChangeListener
 import io.realm.RealmResults
 import io.realm.Sort
-import io.realm.kotlin.where
 import kotlinx.android.synthetic.main.activity_main.*
-import java.util.*
 
 const val EXTRA_TASK = "MyTASK"
 
 class MainActivity : AppCompatActivity() {
     private lateinit var mRealm: Realm
-    private val mRealmListener = object : RealmChangeListener<Realm> {
-        override fun onChange(element: Realm) {
-            reloadListView(null)
-        }
-    }
-
+    private lateinit var categories: MutableList<Category>
     private lateinit var mTaskAdapter: TaskAdapter
 
-    //SearchViewのリスナー
-    private val mSearchViewListener = object  : SearchView.OnQueryTextListener{
-        override fun onQueryTextChange(newText: String?): Boolean {
-            if(newText == "") {
-                reloadListView(null)
-            } else {
-                reloadListView(newText)
-            }
-            return true
-        }
-
-        override fun onQueryTextSubmit(query: String?): Boolean {
-            return false
-        }
-    }
+    private val mRealmListener = RealmChangeListener<Realm> { reloadListView() }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -58,8 +35,36 @@ class MainActivity : AppCompatActivity() {
             startActivity(intent)
         }
 
-        //SearchViewのリスナー登録
-        categorySearchView.setOnQueryTextListener(mSearchViewListener)
+        //カテゴリ一覧の取得
+        getCategory()
+
+        //カテゴリスピナー選択時の処理（タスクのフィルター)
+        categorySpinner.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
+            override fun onNothingSelected(parent: AdapterView<*>?) {
+                TODO("Not yet implemented")
+            }
+
+            override fun onItemSelected(
+                parent: AdapterView<*>?,
+                view: View?,
+                position: Int,
+                id: Long
+            ) {
+                if(position == 0) {
+                    //カテゴリ未選択時の処理
+                    //フィルターなし
+                    reloadListView()
+                } else {
+                    //カテゴリ選択時の処理
+                    //フィルターあり
+                    val item = categorySpinner.selectedItem.toString()
+                    mRealm = Realm.getDefaultInstance()
+                    val results = mRealm.where(Category::class.java).equalTo("name", item).findFirst()
+                    val category: Category? = mRealm.copyFromRealm(results)
+                    reloadListView(category)
+                }
+            }
+        }
 
         //Realmの設定
         mRealm = Realm.getDefaultInstance()
@@ -103,7 +108,7 @@ class MainActivity : AppCompatActivity() {
                 val alarmManager = getSystemService(Context.ALARM_SERVICE) as AlarmManager
                 alarmManager.cancel(resultPendingIntent)
 
-                reloadListView(null)
+                reloadListView()
             }
 
             builder.setNegativeButton("CANCEL", null)
@@ -115,27 +120,33 @@ class MainActivity : AppCompatActivity() {
             true
         }
 
-//        reloadListView()
-        reloadListView(null)
+        reloadListView()
     }
 
-//    private fun reloadListView() {
-//        val taskRealmResults = mRealm.where(Task::class.java).findAll().sort("date", Sort.DESCENDING)
-//        mTaskAdapter.mTaskList = mRealm.copyFromRealm(taskRealmResults)
-//        listView1.adapter = mTaskAdapter
-//        mTaskAdapter.notifyDataSetChanged()
-//    }
 
-    private fun reloadListView(query: String?) {
-        var taskRealmResults: RealmResults<Task>
-        if(query == null) {
-            taskRealmResults = mRealm.where(Task::class.java).findAll().sort("date", Sort.DESCENDING)
-            Log.d("TaskApp", "Filter NULL")
+
+    //タスクListViewの更新
+    private fun reloadListView(category: Category? = null) {
+        val taskRealmResults: RealmResults<Task>
+        val taskList = mutableListOf<Task>()
+
+        //カテゴリが選択されている場合、フィルターを行う
+        if(category == null) {
+            taskList.addAll(mRealm.where(Task::class.java).findAll().sort("date", Sort.DESCENDING))
         } else {
-            taskRealmResults = mRealm.where(Task::class.java).equalTo("category", query.toString()).findAll().sort("date", Sort.DESCENDING)
-            Log.d("TaskApp", "Filter Exist")
+//            taskRealmResults = mRealm.where(Task::class.java).equalTo("category", category).findAll().sort("date", Sort.DESCENDING)
+            taskRealmResults = mRealm.where(Task::class.java).findAll().sort("date", Sort.DESCENDING)
+
+            //カテゴリにマッチするタスクのみリストに追加
+            for(task in taskRealmResults) {
+                val c: Category? = task.category
+                if(c?.id == category?.id) {
+                    taskList.add(task)
+                }
+            }
         }
-        mTaskAdapter.mTaskList = mRealm.copyFromRealm(taskRealmResults)
+
+        mTaskAdapter.mTaskList = taskList
         listView1.adapter = mTaskAdapter
         mTaskAdapter.notifyDataSetChanged()
     }
@@ -145,15 +156,29 @@ class MainActivity : AppCompatActivity() {
         mRealm.close()
     }
 
-    private fun addTaskForTest() {
-        val task = Task()
-        task.title = "作業"
-        task.contents = "プログラムを書いてPUSHする"
-        task.date = Date()
-        task.id = 0
-        mRealm.beginTransaction()
-        mRealm.copyToRealmOrUpdate(task)
-        mRealm.commitTransaction()
+    //カテゴリ一覧を取得し、カテゴリスピナーにセット
+    private fun getCategory() {
+        val realm = Realm.getDefaultInstance()
+        val categoryRealmResults: RealmResults<Category>
+        categoryRealmResults = realm.where(Category::class.java).findAll().sort("id", Sort.ASCENDING)
+
+        categories = realm.copyFromRealm(categoryRealmResults)
+
+        //検索フィルターなし用ダミーカテゴリを追加
+        val dummyCategory = Category()
+        dummyCategory.name = "All"
+        categories.add(0,dummyCategory)
+
+        val adapter = ArrayAdapter<Category>(this, android.R.layout.simple_spinner_item, categories)
+        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+        categorySpinner.adapter = adapter
+        realm.close()
+    }
+
+    override fun onRestart() {
+        super.onRestart()
+        //画面復帰時にカテゴリスピナーを更新
+        getCategory()
     }
 
 }

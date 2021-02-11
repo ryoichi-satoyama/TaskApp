@@ -7,16 +7,15 @@
     android:fitsSystemWindows="true"
     tools:context=".MainActivity">
 
-    <androidx.appcompat.widget.SearchView
-        android:id="@+id/categorySearchView"
+    <Spinner
         android:layout_width="match_parent"
-        app:iconifiedByDefault="false"
-        android:layout_height="wrap_content" />
+        android:layout_height="wrap_content"
+        android:id="@+id/categorySpinner"/>
 
     <ListView
         android:id="@+id/listView1"
         android:layout_width="match_parent"
-        android:layout_below="@id/categorySearchView"
+        android:layout_below="@id/categorySpinner"
         android:layout_height="wrap_content" />
 
 
