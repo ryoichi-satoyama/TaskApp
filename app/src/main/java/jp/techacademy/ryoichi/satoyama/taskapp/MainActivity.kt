@@ -41,7 +41,6 @@ class MainActivity : AppCompatActivity() {
         //カテゴリスピナー選択時の処理（タスクのフィルター)
         categorySpinner.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
             override fun onNothingSelected(parent: AdapterView<*>?) {
-                TODO("Not yet implemented")
             }
 
             override fun onItemSelected(
