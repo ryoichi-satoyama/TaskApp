@@ -35,7 +35,7 @@ class CategoryActivity : AppCompatActivity() {
             if (categoryRealmResults.max("id") != null) {
                 categoryRealmResults.max("id")!!.toInt() + 1
             } else {
-                0
+                1
             }
         category.id = identifier
         category.name = categoryEditText.text.toString()

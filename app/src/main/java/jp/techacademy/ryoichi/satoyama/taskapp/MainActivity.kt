@@ -16,6 +16,8 @@ import io.realm.RealmChangeListener
 import io.realm.RealmResults
 import io.realm.Sort
 import kotlinx.android.synthetic.main.activity_main.*
+import kotlinx.android.synthetic.main.activity_main.categorySpinner
+import kotlinx.android.synthetic.main.content_input.*
 
 const val EXTRA_TASK = "MyTASK"
 
@@ -56,11 +58,13 @@ class MainActivity : AppCompatActivity() {
                 } else {
                     //カテゴリ選択時の処理
                     //フィルターあり
-                    val item = categorySpinner.selectedItem.toString()
-                    mRealm = Realm.getDefaultInstance()
-                    val results = mRealm.where(Category::class.java).equalTo("name", item).findFirst()
-                    val category: Category? = mRealm.copyFromRealm(results)
-                    reloadListView(category)
+//                    val item = categorySpinner.selectedItem.toString()
+//                    mRealm = Realm.getDefaultInstance()
+//                    val results = mRealm.where(Category::class.java).equalTo("name", item).findFirst()
+//                    val category: Category? = mRealm.copyFromRealm(results)
+                    val category = categorySpinner.selectedItem as Category
+                    reloadListView(category.id)
+
                 }
             }
         }
@@ -125,14 +129,14 @@ class MainActivity : AppCompatActivity() {
 
 
     //タスクListViewの更新
-    private fun reloadListView(category: Category? = null) {
+    private fun reloadListView(categoryId: Int = -1) {
         val taskList = mutableListOf<Task>()
 
         //カテゴリが選択されている場合、フィルターを行う
-        if(category == null) {
+        if(categoryId == -1) {
             taskList.addAll(mRealm.where(Task::class.java).findAll().sort("date", Sort.DESCENDING))
         } else {
-            taskList.addAll(mRealm.where(Task::class.java).equalTo("category.name", category.name).findAll().sort("date", Sort.DESCENDING))
+            taskList.addAll(mRealm.where(Task::class.java).equalTo("category.id", categoryId).findAll().sort("date", Sort.DESCENDING))
         }
 
         mTaskAdapter.mTaskList = taskList
@@ -155,6 +159,7 @@ class MainActivity : AppCompatActivity() {
 
         //検索フィルターなし用ダミーカテゴリを追加
         val dummyCategory = Category()
+        dummyCategory.id = -1
         dummyCategory.name = "All"
         categories.add(0,dummyCategory)
 
