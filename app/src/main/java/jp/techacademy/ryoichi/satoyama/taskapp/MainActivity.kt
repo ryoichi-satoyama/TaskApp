@@ -126,23 +126,13 @@ class MainActivity : AppCompatActivity() {
 
     //タスクListViewの更新
     private fun reloadListView(category: Category? = null) {
-        val taskRealmResults: RealmResults<Task>
         val taskList = mutableListOf<Task>()
 
         //カテゴリが選択されている場合、フィルターを行う
         if(category == null) {
             taskList.addAll(mRealm.where(Task::class.java).findAll().sort("date", Sort.DESCENDING))
         } else {
-//            taskRealmResults = mRealm.where(Task::class.java).equalTo("category", category).findAll().sort("date", Sort.DESCENDING)
-            taskRealmResults = mRealm.where(Task::class.java).findAll().sort("date", Sort.DESCENDING)
-
-            //カテゴリにマッチするタスクのみリストに追加
-            for(task in taskRealmResults) {
-                val c: Category? = task.category
-                if(c?.id == category?.id) {
-                    taskList.add(task)
-                }
-            }
+            taskList.addAll(mRealm.where(Task::class.java).equalTo("category.name", category.name).findAll().sort("date", Sort.DESCENDING))
         }
 
         mTaskAdapter.mTaskList = taskList
