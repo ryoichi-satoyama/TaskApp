@@ -73,9 +73,10 @@ class MainActivity : AppCompatActivity() {
         mRealm = Realm.getDefaultInstance()
         mRealm.addChangeListener(mRealmListener)
 
+        // ListViewの設定
         mTaskAdapter = TaskAdapter(this)
 
-        //リストのアイテム押下時の処理
+        // ListViewをタップしたときの処理
         listView1.setOnItemClickListener { parent, view, position, id ->
             //入力・編集画面への遷移
             val task = parent.adapter.getItem(position) as Task
@@ -90,6 +91,7 @@ class MainActivity : AppCompatActivity() {
             //タスク削除
             val task = parent.adapter.getItem(position) as Task
 
+            // ダイアログを表示する
             val builder = AlertDialog.Builder(this)
             builder.setTitle("削除")
             builder.setMessage(task.title + "を削除しますか")
@@ -134,13 +136,17 @@ class MainActivity : AppCompatActivity() {
 
         //カテゴリが選択されている場合、フィルターを行う
         if(categoryId == -1) {
+            // Realmデータベースから、「すべてのデータを取得して新しい日時順に並べた結果」を取得
             taskList.addAll(mRealm.where(Task::class.java).findAll().sort("date", Sort.DESCENDING))
         } else {
             taskList.addAll(mRealm.where(Task::class.java).equalTo("category.id", categoryId).findAll().sort("date", Sort.DESCENDING))
         }
 
+        // 上記の結果を、TaskListとしてセットする
         mTaskAdapter.mTaskList = taskList
+        // TaskのListView用のアダプタに渡す
         listView1.adapter = mTaskAdapter
+        // 表示を更新するために、アダプターにデータが変更されたことを知らせる
         mTaskAdapter.notifyDataSetChanged()
     }
 

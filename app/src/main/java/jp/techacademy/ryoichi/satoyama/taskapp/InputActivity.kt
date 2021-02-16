@@ -68,12 +68,14 @@ class InputActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_input)
 
+        // ActionBarを設定する
         val toolbar = findViewById<View>(R.id.toolbar) as Toolbar
         setSupportActionBar(toolbar)
         if(supportActionBar != null) {
             supportActionBar!!.setDisplayHomeAsUpEnabled(true)
         }
 
+        // UI部品の設定
         date_button.setOnClickListener(mOnDateClickListener)
         times_button.setOnClickListener(mOnTimeClickListener)
         done_button.setOnClickListener(mOnDoneClickListener)
